@@ -181,7 +181,8 @@ void pi_parse_config_file (void)
     config_options.display_effect = get_integer_conf("Graphics", "DisplayEffect", 0);
     config_options.maintain_aspect_ratio = get_integer_conf("Graphics", "MaintainAspectRatio", 1);
     config_options.display_rotate = get_integer_conf("Graphics", "DisplayAutoRotate", 0);
-
+	config_options.dpad_rotate = get_integer_conf("Graphics", "DPadRotate", 0);
+	
     close_config_file();
 
 }
@@ -524,10 +525,35 @@ void pi_process_events (void)
             Uint8 hat = SDL_JoystickGetHat(joy[i], 0);
             if (hat != 0) {
                 hatmovement=1;
-                if(hat & SDL_HAT_UP) { joy_axes[i][JOYUD] = UP; }
-                if(hat & SDL_HAT_DOWN) { joy_axes[i][JOYUD] = DOWN; }
-                if(hat & SDL_HAT_LEFT) { joy_axes[i][JOYLR] = LEFT; }
-                if(hat & SDL_HAT_RIGHT) { joy_axes[i][JOYLR] = RIGHT; }
+				
+				if (config_options.dpad_rotate == 90)
+				{
+					if(hat & SDL_HAT_UP) { joy_axes[i][JOYLR] = LEFT; }
+					if(hat & SDL_HAT_DOWN) { joy_axes[i][JOYLR] = RIGHT; }
+					if(hat & SDL_HAT_LEFT) { joy_axes[i][JOYUD] = DOWN; }
+					if(hat & SDL_HAT_RIGHT) { joy_axes[i][JOYUD] = UP; }
+					
+				}
+				else if (config_options.dpad_rotate == 180)
+				{
+					if(hat & SDL_HAT_UP) { joy_axes[i][JOYUD] = DOWN; }
+					if(hat & SDL_HAT_DOWN) { joy_axes[i][JOYUD] = UP; }
+					if(hat & SDL_HAT_LEFT) { joy_axes[i][JOYLR] = RIGHT; }
+					if(hat & SDL_HAT_RIGHT) { joy_axes[i][JOYLR] = LEFT; }					
+				}
+				else if (config_options.dpad_rotate == 270)
+				{
+					if(hat & SDL_HAT_UP) { joy_axes[i][JOYLR] = RIGHT; }
+					if(hat & SDL_HAT_DOWN) { joy_axes[i][JOYLR] = LEFT; }
+					if(hat & SDL_HAT_LEFT) { joy_axes[i][JOYUD] = UP; }
+					if(hat & SDL_HAT_RIGHT) { joy_axes[i][JOYUD] = DOWN; }					
+				}
+				else{
+					if(hat & SDL_HAT_UP) { joy_axes[i][JOYUD] = UP; }
+					if(hat & SDL_HAT_DOWN) { joy_axes[i][JOYUD] = DOWN; }
+					if(hat & SDL_HAT_LEFT) { joy_axes[i][JOYLR] = LEFT; }
+					if(hat & SDL_HAT_RIGHT) { joy_axes[i][JOYLR] = RIGHT; }
+				}
             }
         }
 
@@ -542,18 +568,58 @@ void pi_process_events (void)
                 if(x_move > -10000 && x_move < 10000)
                     joy_axes[i][JOYLR] = CENTER;
                 else if(x_move > 10000)
-                    joy_axes[i][JOYLR] = RIGHT;
+				{
+					//baggins
+					if (config_options.dpad_rotate == 90)
+						joy_axes[i][JOYUD] = UP;
+					else if (config_options.dpad_rotate == 180)
+						joy_axes[i][JOYLR] = LEFT;	
+					else if (config_options.dpad_rotate == 270)
+						joy_axes[i][JOYUD] = DOWN;
+					else
+						joy_axes[i][JOYLR] = RIGHT;		
+				}
                 else
-                    joy_axes[i][JOYLR] = LEFT;
+				{
+					//baggins
+					if (config_options.dpad_rotate == 90)
+						joy_axes[i][JOYUD] = DOWN;
+					else if (config_options.dpad_rotate == 180)
+						joy_axes[i][JOYLR] = RIGHT;
+					else if (config_options.dpad_rotate == 270)
+						joy_axes[i][JOYUD] = UP;
+					else					
+						joy_axes[i][JOYLR] = LEFT;
+				}
             }
 
             if(y_move != 0) {
                 if(y_move > -10000 && y_move < 10000)
                     joy_axes[i][JOYUD] = CENTER;
                 else if(y_move > 10000)
-                    joy_axes[i][JOYUD] = DOWN;
+				{
+					//baggins
+					if (config_options.dpad_rotate == 90)
+						joy_axes[i][JOYLR] = RIGHT;
+					else if (config_options.dpad_rotate == 180)
+						joy_axes[i][JOYUD] = UP;
+					else if (config_options.dpad_rotate == 270)
+						joy_axes[i][JOYLR] = LEFT;
+					else
+						joy_axes[i][JOYUD] = DOWN;
+				}
                 else
-                    joy_axes[i][JOYUD] = UP;
+				{
+					//baggins
+					if (config_options.dpad_rotate == 90)
+						joy_axes[i][JOYLR] = LEFT;
+					else if (config_options.dpad_rotate == 180)
+						joy_axes[i][JOYUD] = DOWN;
+					else if (config_options.dpad_rotate == 270)
+						joy_axes[i][JOYLR] = RIGHT;
+					else
+						joy_axes[i][JOYUD] = UP;
+				}
             }
         }
 
@@ -578,16 +644,17 @@ void pi_process_events (void)
                 if (event.key.keysym.sym == SDLK_0)
                     bShowFPS = !bShowFPS;
                 
-//                if (event.key.keysym.sym == SDLK_F1)  num = 1;
-//                else if (event.key.keysym.sym == SDLK_F2) num = 2;
-//                else if (event.key.keysym.sym == SDLK_F3) num = 3;
-//                else if (event.key.keysym.sym == SDLK_F4) num = 4;
-//                if (num) {
-//                    if (event.key.keysym.mod & KMOD_SHIFT)
-//                        StatedSave(num);
-//                    else
-//                        StatedLoad(num);
-//                }
+				// baggins
+                if (event.key.keysym.sym == SDLK_F1)  num = 1;
+                else if (event.key.keysym.sym == SDLK_F2) num = 2;
+                else if (event.key.keysym.sym == SDLK_F3) num = 3;
+                else if (event.key.keysym.sym == SDLK_F4) num = 4;
+                if (num) {
+                    if (event.key.keysym.mod & KMOD_SHIFT)
+                        StatedSave(num);
+                    else
+                        StatedLoad(num);
+                }
                 break;
             case SDL_KEYUP:
                 sdl_keys = SDL_GetKeyState(NULL);
@@ -595,8 +662,24 @@ void pi_process_events (void)
         }
         
     }
-    
+ 
+			
     //Check START+R,L for quicksave/quickload. Needs to go here outside of the internal processing
+	// baggins
+	if (pi_joy[ACCEL] != pi_joy[QLOAD])
+	{
+		if (joy_buttons[0][pi_joy[ACCEL]] && joy_buttons[0][pi_joy[QLOAD]] ) 
+			StatedLoad(0);
+	}
+
+	if (pi_joy[ACCEL] != pi_joy[QSAVE])
+	{
+		if (joy_buttons[0][pi_joy[ACCEL]] && joy_buttons[0][pi_joy[QSAVE]] ) 
+			StatedSave(0);
+	}	
+
+	
+	
 //  if (joy_buttons[0][pi_joy[QLOAD]] || (joy_buttons[0][pi_joy[SELECT_1]] && joy_buttons[0][pi_joy[L_1]] )) {
 //      char fname[256];
 //      strcpy(fname, S9xGetFilename (".000"));
